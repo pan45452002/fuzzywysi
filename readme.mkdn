@@ -1,0 +1,22 @@
+# FuzzyWysi
+
+This is still very early code. 
+
+Inspired by [WysiHat](http://github.com/josh/wysihat/tree/master) but built atop jQuery, FuzzyWysi inspires to be lightweight and customizable with code, not configuration options.
+
+## Support Platforms
+
+It currently works with:
+
+* Firefox 3
+* Safari 3
+
+I haven't tested it with anything else yet, but IE support is planned.
+
+## Dependencies
+
+* [jQuery](http://jquery.com) 1.2.6 or later
+
+## License
+
+FuzzyWysi is released under the MIT License.
