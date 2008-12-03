@@ -1,0 +1,88 @@
+<html>
+<head>
+  <title>monkeywriter demo</title>
+  
+  <script src='../vendor/jquery.js'></script>
+
+  <script src='../lib/fuzzywysi.js'></script>
+  
+  <script>
+  $(document).ready(function () {
+    t = new FuzzyWysi.Toolbar('#content-toolbar', {
+      link: {
+        activate: function(callback) {
+          url = prompt('enter url:', 'http://example.com');
+          if (url) { callback('createLink', url); }
+        },
+        deactivate: function(callback) {
+          callback('unlink');
+        },
+        onActive: function(toolbar, btn, currentNode) {
+          var href = $(currentNode).parents().andSelf().filter('a').attr('href');
+          $('.status', toolbar).text('linked to: ')
+            .append($('<a>&nbsp;</a>').attr('href', href).text(href));
+        },
+        onInActive: function(toolbar, btn) {
+          $('.status', toolbar).text('');
+        }
+      }
+    });
+    f = new FuzzyWysi('#content', [t], {
+      queries: {
+        link: function(selection) { 
+          return $(selection).parents().andSelf().filter('a').length > 0;
+        }
+      }
+    });
+  })
+  </script>
+  
+  <style>
+  div.toolbar { 
+    overflow: hidden;
+    border-left: 1px solid #666;
+  }
+  div.toolbar .status {
+    float: left;
+    font-size: 10px;
+  }
+  div.toolbar .button {
+    float: left;
+    border: 1px solid #666;
+    border-width: 1px 1px 1px 0;
+    background: #eee;
+    padding: 1px 3px;
+  }
+  div.toolbar .button.active { background-color: #aaa; }
+
+  div.toolbar .button.bold { font-weight: bold; }
+  div.toolbar .button.italic { font-style: italic; }
+  div.toolbar .button.underline { text-decoration: underline; }
+  
+  div.toolbar .button.link { text-decoration: underline; color: blue; }
+  </style>
+  
+</head>
+<body>
+  
+  <h3>welcome to your editor.</h3>
+  
+  <form action='#'>
+    <div id='content-toolbar' class='toolbar'>
+      <div class='button bold' command='bold'>bold</div>
+      <div class='button italic' command='italic'>ital</div>
+      <div class='button underline' command='underline'>uline</div>
+      <div class='button link' command='link'>link</div>
+      
+      <div class='status'></div>
+    </div>
+    <textarea id='content' cols='50' rows='10'>
+      <p>Here's <a href='foo.html'>some</a> <b>example content</b> for you.</p>
+    </textarea>
+  </form>
+  
+  <div id='debug'> </div>
+  
+</body>
+</html>
+  

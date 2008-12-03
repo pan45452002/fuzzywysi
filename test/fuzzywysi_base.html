@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <script src="../vendor/jquery.js"></script>
+  <link rel="stylesheet" href="../vendor/qunit.css" type="text/css" media="screen" />
+
+  <script>
+  var fuzzy, toolbar;
+
+  function setDoc(text) { fuzzy.document().body.innerHTML = text; }
+  function getDoc() { return fuzzy.document().body.innerHTML; }
+  
+  $(document).ready(function(){
+    toolbar = new FuzzyWysi.Toolbar($('#toolbar'));
+    fuzzy = new FuzzyWysi($('#editor'), [toolbar], {});
+    
+    module('basics');
+    test("exposes its document from the iFrame", function() {
+      equals(fuzzy.document(), $('iframe')[0].contentDocument)
+    })
+
+    test("sets designMode 'on' on the iFrame's document", function() {
+      equals(fuzzy.document().designMode, 'on')
+    })
+    
+    test("sets config stylesheets on iFrame doc", function() {
+      equals($('style', fuzzy.document()).text(), 
+        FuzzyWysi.defaults.style.replace(/<\/?style>/g,''))
+    })
+    
+    module('content', {
+      setup: function() { $('#editor').val('foo'); setDoc('bar'); },
+      teardown: function() { $('#editor').val(''); setDoc(''); }
+    });
+    test("loads the textarea's value to the iframe's doc", function(){
+      fuzzy.load();
+      equals(getDoc(), "foo");
+    });
+    
+    test("saves the iframe doc's content to the textarea", function() {
+      fuzzy.save();
+      equals($('#editor').val(), 'bar');
+    })
+
+    test("exposes the iframe's content", function() {
+      equals(fuzzy.content(), $('body', fuzzy.document()).html())
+    })
+
+    test("sets the iframe's content", function() {
+      fuzzy.content("hi <b>there</b>");
+      equals(getDoc(), "hi <b>there</b>")
+    })
+    
+    test("runs input through the filters", function() {
+      fuzzy.filters.chain.push(function(text) { return "bee"; });
+      fuzzy.content("bar");
+      equals(getDoc(), "bee");
+      fuzzy.filters.chain.pop();
+    })
+    
+    test("runs output through the filters", function() {
+      fuzzy.filters.chain.push(function(t) { return "bee"; });
+      equals(fuzzy.content(), "bee")
+      fuzzy.filters.chain.pop();
+    })
+    
+    module('events', {
+      setup: function() { 
+        $('#editor').val('foo');
+        setDoc("bar");
+        fuzzy.config.changeCallback = function() { $('#editor').data('changed', true); }
+      },
+      teardown: function() { 
+        $('#editor').val(''); 
+        setDoc('');
+        fuzzy.config.changeCallback = FuzzyWysi.defaults.changeCallback;
+        $('#editor').data('changed', false)
+      }
+    });
+    test("saves on iframe window blur", function() {
+      $(fuzzy.window()).blur();
+      equals($('#editor').val(), 'bar')
+    })
+    
+    test("saves on iframe window focus", function() {
+      $(fuzzy.window()).focus();
+      equals($('#editor').val(), 'bar');
+    })
+    
+    test("saves and changes on iframe document keyup", function() {
+      $(fuzzy.document()).keyup();
+      equals($('#editor').val(), 'bar', "save called");
+      ok($('#editor').data('changed'), "callback ran");
+    })
+    test("saves and changes on iframe document keypress", function() {
+      $(fuzzy.document()).keypress();
+      equals($('#editor').val(), 'bar', "save called");
+      ok($('#editor').data('changed'), "callback ran");
+    })
+    test("saves and changes on iframe document mouseup", function() {
+      $(fuzzy.document()).mouseup();
+      equals($('#editor').val(), 'bar', "save called");
+      ok($('#editor').data('changed'), "callback ran");
+    })
+    
+  });
+  </script>
+
+  <script type="text/javascript" src="../vendor/qunit.js"></script>
+  <script type="text/javascript" src="../lib/fuzzywysi.js"></script>
+
+  <script type="text/javascript" src="test.js"></script>
+</head>
+<body>
+  <div id='e' style='display:none'>
+    <div id='toolbar'></div>
+    <textarea id='editor'></textarea>
+  </div>
+  
+  <h1>FuzzyWysi</h1>
+  <h2 id="banner"></h2>
+  <h2 id="userAgent"></h2>
+
+  <ol id="tests"></ol>
+
+  <div id="main"></div>
+ 
+</body>
+</html>
